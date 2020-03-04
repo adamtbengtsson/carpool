@@ -27,6 +27,12 @@ class User(db.Model):
 class CarOwner(User, db.Model):
     car = db.relationship('Car', backref='owner', lazy=True)
 
+    
+@dataclass
+class CarManager(db.Model):
+    
+        
+    
 
 @dataclass
 class Car(db.Model):
@@ -37,6 +43,8 @@ class Car(db.Model):
     fuel: str
     seats: str
     owner: CarOwner
+    booked: boolean
+    user: User
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(30), unique=True, nullable=False)
@@ -45,6 +53,8 @@ class Car(db.Model):
     license_plate = db.Column(db.String(10), unique=True, nullable=False)
     fuel = db.Column(db.String(20), nullable=False)
     seats = db.Column(db.Integer, nullable=False)
+    booked = db.Column(db.Boolean, nullable=False)
+    user = relaitionship(User)
 
 
     def __repr__(self):
