@@ -23,9 +23,9 @@ class User(db.Model):
         return f"User('{self.username}', '{self.email}', '{self.image}')"
 
 
-@dataclass
-class CarOwner(User, db.Model):
-    car = db.relationship('Car', backref='owner', lazy=True)
+#@dataclass
+#class CarOwner(User, db.Model):
+#    car = db.relationship('Car', backref='owner', lazy=True)
 
     
 @dataclass
@@ -33,11 +33,10 @@ class CarManager(db.Model):
     
         
     
-
 @dataclass
 class Car(db.Model):
     id : int
-    name: str
+    car_name: str
     type: str
     license_plate: str
     fuel: str
@@ -47,13 +46,14 @@ class Car(db.Model):
     user: User
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(30), unique=True, nullable=False)
+    car_name = db.Column(db.String(30), unique=True, nullable=False)
     owner = relationship(CarOwner)
     type = db.Column(db.String(20, nullable=False))
     license_plate = db.Column(db.String(10), unique=True, nullable=False)
     fuel = db.Column(db.String(20), nullable=False)
     seats = db.Column(db.Integer, nullable=False)
     booked = db.Column(db.Boolean, nullable=False)
+    name = db.Column(db.String(30), db.ForeignKey('user.name'), nullable=False)
     user = relaitionship(User)
 
 
