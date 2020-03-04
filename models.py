@@ -53,7 +53,7 @@ class Car(db.Model):
 
 @dataclass
 class DataBaseHandler(db.Model):
-
+#hello
 
 @dataclass
 class Token(db.Model)
