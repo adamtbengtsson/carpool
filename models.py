@@ -30,7 +30,11 @@ class User(db.Model):
     
 @dataclass
 class CarManager(db.Model):
+    car: Car
+    days: list
+    user: User
     
+    car = db.relationship(Car
         
     
 @dataclass
@@ -59,10 +63,6 @@ class Car(db.Model):
 
     def __repr__(self):
         return f"Car('{self.name}', '{self.owner}')"
-
-
-@dataclass
-class DataBaseHandler(db.Model):
 
 
 @dataclass
