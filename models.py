@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date
 from flaskblog import db, login_manager
 from flask_login import UserMixin
 from sqlalchemy.orm import relationship
@@ -34,7 +34,9 @@ class CarManager(db.Model):
     days: list
     user: User
     
-    car = db.relationship(Car
+    day = db.Column(db.datetime.date(), default = date.now())
+    car = db.Column(db.String, db.ForeignKey('car.license_plate')nullable = False)
+    car = relationship('Car')
         
     
 @dataclass
