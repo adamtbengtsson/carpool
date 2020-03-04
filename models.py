@@ -41,13 +41,13 @@ class Car(db.Model):
     license_plate: str
     fuel: str
     seats: str
-    owner: CarOwner
+    #owner: CarOwner
     booked: boolean
     user: User
 
     id = db.Column(db.Integer, primary_key=True)
     car_name = db.Column(db.String(30), unique=True, nullable=False)
-    owner = relationship(CarOwner)
+    #owner = relationship(CarOwner)
     type = db.Column(db.String(20, nullable=False))
     license_plate = db.Column(db.String(10), unique=True, nullable=False)
     fuel = db.Column(db.String(20), nullable=False)
