@@ -39,8 +39,10 @@ class CarManager(db.Model):
     user: User
     
     day = db.Column(db.datetime.date(), default = date.now())
-    car = db.Column(db.String, db.ForeignKey('car.license_plate')nullable = False)
-    car = relationship('Car')
+    car_id = db.Column(db.String, db.ForeignKey('car.license_plate')nullable = False)
+    car = relationship(Car) 
+    user_id = db.relationship(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user = relationship(User)
         
     
 @dataclass
