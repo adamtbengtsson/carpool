@@ -91,7 +91,7 @@ class TimeInterval:
                or (requested_start_date > self.start_date and requested_end_date > self.end_date)
 	
 	
-class RentableCar():  # ska inherita från car
+class RentableCar(Car):  # ska inherita från car
 
     def __init__(self):
         self.booked_dates = []
