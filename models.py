@@ -16,26 +16,32 @@ class DB_handler(): #hanterar det som ska skickas till och från databasen, om v
 class User(db.Model):
     id: int
     username: str
+    email: str
+    image: str
+    password: str
+    money_spent: int
+    milage: int
+    std_destination: str
+    token: str
+		
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(30), unique=True, nullable=False)
     email = db.Column(db.String(130), unique=True, nullable=False)
     image = db.Coulm(db.String(30), nullable=False, default='default.jpg')
-    password = db.Column(db.String(60), nulable=False)
-    cars = db.relationship('Car', backref='car_owner', lazy=True)
+    password = db.Column(db.String(60), nullable=False)
+    money_spent = db.Column(db.Integer, default=0)
+    milage = db.Column(db.Integer, default=0)
+    std_destination = db.Column(db.String(30))
+    token = ?
 
     def __repr__(self):
         return f"User('{self.username}', '{self.email}', '{self.image}')"
 
-
-#@dataclass
-#class CarOwner(User, db.Model):
-#    car = db.relationship('Car', backref='owner', lazy=True)
-
     
 @dataclass
 class CarManager(db.Model):
-    car: Car
     days: list
+    car: Car 
     user: User
     
     day = db.Column(db.datetime.date(), default = date.now())
@@ -49,25 +55,22 @@ class CarManager(db.Model):
 class Car(db.Model):
     id : int
     car_name: str
-    type: str
+    model: str
     license_plate: str
     fuel: str
     seats: str
-    #owner: CarOwner
     booked: boolean
     user: User
 
     id = db.Column(db.Integer, primary_key=True)
     car_name = db.Column(db.String(30), unique=True, nullable=False)
-    #owner = relationship(CarOwner)
-    type = db.Column(db.String(20, nullable=False))
+    model = db.Column(db.String(20, nullable=False))
     license_plate = db.Column(db.String(10), unique=True, nullable=False)
     fuel = db.Column(db.String(20), nullable=False)
     seats = db.Column(db.Integer, nullable=False)
-    booked = db.Column(db.Boolean, nullable=False)
-    name = db.Column(db.String(30), db.ForeignKey('user.name'), nullable=False)
+    booked = db.Column(db.Boolean, nullable=False, default==False)
+    user_name = db.Column(db.String(30), db.ForeignKey('user.name'))
     user = relaitionship(User)
-
 
     def __repr__(self):
         return f"Car('{self.name}', '{self.owner}')"
