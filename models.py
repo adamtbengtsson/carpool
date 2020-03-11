@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import date
-from flaskblog import db, login_manager
+from carpool import db, login_manager
 from flask_login import UserMixin
 from sqlalchemy.orm import relationship
 
