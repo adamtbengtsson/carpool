@@ -1,4 +1,5 @@
 import os
+from datetime import date
 from carpool import db, bcrypt
 from carpool.models import User, Car, CarManager
 
@@ -13,30 +14,19 @@ except:
 db.create_all()
 
 hashed_password = bcrypt.generate_password_hash('testing').decode('utf-8')
-default_user = User(username='Default', email='default@test.com', password=hashed_password)
+default_user = User(username='Default', email='default@test.com', image = default.jpg, money_spent = 0, mileage = 0, 
+                    password=hashed_password)
+
 db.session.add(default_user)
 
-post = Post(title='Test post default', content_type='markdown', content="""# This is a markdown post
+default_car = Car(car_name ='Lightning McQueen', car_type = 'sedan', liscence_plate = 'AAA000', fuel = 'gas', seats = 5  
+                  booked = False, user=default_user, user_name = user.username)
 
-**Here, you can use MD as you want.**
+db.session.add(car)
 
-*Lists are possible*
+booking = Booking(day = date.now(), car = default_car, car_id = car.id = user = default_user, user_id = user.id)
 
-- With multiple items
-- Numbered lists as well
-
-Like this
-
-1. And this
-""", user=default_user)
-
-db.session.add(post)
-
-comment = Comment(user=default_user, content='''
-Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Ut purus elit, vestibulum ut, placerat ac, adipiscingvitae, felis. Curabitur dictum gravida mauris. Nam arcu libero, nonummy eget, consectetuer id, vulputate a, magna. Donec vehicula augue eu neque. Pellentesque habitant morbi tristique senectus et netus et malesuadafames ac turpis egestas. Mauris ut leo. Cras viverra metus rhoncus sem. Nulla et lectus vestibulum urna fringillaultrices. Phasellus eu tellus sit amet tortor gravida placerat. Integer sapien est, iaculis in, pretium quis, viverraac, nunc. Praesent eget sem vel leo ultrices bibendum. Aenean faucibus. Morbi dolor nulla, malesuada eu,pulvinar at, mollis ac, nulla. Curabitur auctor semper nulla. Donec varius orci eget risus. Duis nibh mi, congueeu, accumsan eleifend, sagittis quis, diam. Duis eget orci sit amet orci dignissim rutrum. Nam dui ligula, fringilla a, euismod sodales, sollicitudin vel, wisi. Morbi auctor lorem non justo. Nam lacuslibero, pretium at, lobortis vitae, ultricies et, tellus. Donec aliquet, tortor sed accumsan bibendum, erat ligulaaliquet magna, vitae ornare odio metus a mi. Morbi ac orci et nisl hendrerit mollis. Suspendisse ut massa. Crasnec ante. Pellentesque a nulla. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculusmus. Aliquam tincidunt urna. Nulla ullamcorper vestibulum turpis. Pellentesque cursus luctus mauris. Nulla malesuada porttitor diam. Donec felis erat, congue non, volutpat at, tincidunt tristique, libero. Vivamusviverra fermentum felis. Donec nonummy pellentesque ante. Phasellus adipiscing semper elit. Proin fermentummassa ac quam. Sed diam turpis, molestie vitae, placerat a, molestie nec, leo. Maecenas lacinia. Nam ipsumligula, eleifend at, accumsan nec, suscipit a, ipsum. Morbi blandit ligula feugiat magna. Nunc eleifend consequatlorem. Sed lacinia nulla vitae enim. Pellentesque tincidunt purus vel magna. Integer non enim. Praesent euismodnunc eu purus. Donec bibendum quam in tellus. Nullam cursus pulvinar lectus. Donec et mi. Nam vulputatemetus eu enim. Vestibulum pellentesque felis eu massa. Quisque ullamcorper placerat ipsum. Cras nibh. Morbi vel justo vitae lacus tincidunt ultrices. Lorem ipsumdolor sit amet, consectetuer adipiscing elit. In hac habitasse platea dictumst. Integer tempus convallis augue. Etiam facilisis. Nunc elementum fermentum wisi. Aenean placerat. Ut imperdiet, enim sed gravida sollicitudin, felis odio placerat quam, ac pulvinar elit purus eget enim. Nunc vitae tortor. Proin tempus nibh sit amet nisl. Vivamus quis tortor vitae risus porta vehicula.
-''', post=post)
-
-db.session.add(comment)
+db.session.add(booking)
 
 db.session.commit()
 
