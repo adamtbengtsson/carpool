@@ -13,6 +13,7 @@ def home():
     return render_template('home.html')
 
 
-@app.route('/book')
+@app.route('/book', methods = ['GET, 'POST'])
+@login_required
 def book():
     return render_template('book.html')
