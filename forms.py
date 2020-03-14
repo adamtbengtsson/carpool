@@ -74,9 +74,9 @@ if action == "book":
         if datetime.fromisoformat(first_date) <= now or datetime.fromisoformat(second_date) <= now:
             print("The selected dates are in the past, please choose new ones.")
 
-        # visa available carws, låt angvändaren välja
+        # visa available cars, låt användaren välja
 
-        #elif car1.is_available(desired_interval):
+        elif car1.is_available(desired_interval):
 
             print("\nAvailable cars:\n")
 
