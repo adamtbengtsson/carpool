@@ -7,9 +7,6 @@ from sqlalchemy.orm import relationship
 @login_manager.user_loader
 def load_user(user_id):
 	return User.query.get(int(user_id))
-
-class DB_handler(): #hanterar det som ska skickas till och från databasen, om vi skulle ha det i t.ex car_manager skulle den bli för stor.
-	__init__(self): # Tror inte vi ska ha någon sådan klass
 	
 
 @dataclass
@@ -34,7 +31,7 @@ class User(db.Model):
 
 @dataclass
 class Car(db.Model):
-	id : int
+	id: int
 	car_name: str
 	model: str
 	license_plate: str
@@ -49,8 +46,7 @@ class Car(db.Model):
 	license_plate = db.Column(db.String(10), unique=True, nullable=False)
 	fuel = db.Column(db.String(20), nullable=False)
 	seats = db.Column(db.Integer, nullable=False)
-	booked = db.Column(db.Boolean, nullable=False, default==False)
-	user_name = db.Column(db.String(30), db.ForeignKey('user.name'))
+	user_id = db.Column(db.String(30), db.ForeignKey('user.id'))
 	user = relaitionship(User)
 	
 	def __repr__(self):
@@ -60,13 +56,13 @@ class Car(db.Model):
 @dataclass
 class CarManager(db.Model):
 	id: int
-	days: list
+	days: date
 	car: Car 
 	user: User
 	money_spent: int
 	milage: int
     
-	id = db.Column(db.Integer, primary_key=True
+	id = db.Column(db.Integer, primary_key=True)
 	day = db.Column(db.datetime.date(), default = date.now())
 	car_id = db.Column(db.String, db.ForeignKey('car.license_plate')nullable = False)
 	car = relationship(Car) 
