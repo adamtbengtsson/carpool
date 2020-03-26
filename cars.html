@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+{% block content %}
+
+        {% for car in cars %}
+            <article class="media content-section">
+              <img class="rounded-circle article-img" src="{{ url_for('static', filename='car_pics/' + car.image_file) }}">
+              <div class="media-body">
+                <div class="article-metadata">
+                  <a class="mr-2" href="#">{{ car.model }}</a>
+                  <small class="text-muted">{{ car.license_plate }}</small>
+                </div>
+                <h2><a class="article-title" href="{{ url_for('home') }}">{{ car.car_name }}</a></h2>
+
+                <h5>Fuel level: {{car.fuel}}</h5>
+                <h5>Number of seats: {{ car.seats }}</h5>
+                <p>Info: {{ car.info }}</p>
+
+              </div>>
+            </article>
+        {% endfor %}
+
+{% endblock content %}
