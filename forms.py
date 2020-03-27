@@ -1,9 +1,11 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
 from flask_login import current_user
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField, RadioField, DateField
-from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
-from carpool.models import User, Car, CarManager
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField, RadioField, IntegerField
+from wtforms.fields.html5 import DateField
+from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError, number_range
+from flaskblog.models import User, Car
+from datetime import date
 
 
 class RegistrationForm(FlaskForm):
@@ -40,6 +42,8 @@ class UpdateAccountForm(FlaskForm):
                            validators=[DataRequired(), Length(min=2, max=20)])
     email = StringField('Email',
                         validators=[DataRequired(), Email()])
+    std_destination = StringField('Standard Destination',
+                                  validators = [DataRequired(), Length(min=1, max=50)])
     picture = FileField('Update Profile Picture', validators=[FileAllowed(['jpg', 'png'])])
     submit = SubmitField('Update')
 
@@ -55,134 +59,63 @@ class UpdateAccountForm(FlaskForm):
             if user:
                 raise ValidationError('That email is taken. Please choose a different one.')
 
-class BookForm():
-    day = DateField('Day', validators=[DataRequired()])
-    #start_date = DateField('Start date', validators=[DataRequired()])
-    #end_date = DateField('End date', validators=[DataRequired()])
-    car = StringField('Car', validators=[DataRequired()], )
-    #user = StringField('User', validators=[DataRequired()])
-    submit = SubmitField('Book')
+
+class PostForm(FlaskForm):
+    title = StringField('Title', validators=[DataRequired()])
+    content_type = RadioField('Content type', validators=[DataRequired()], choices=[('plain', 'Plain Text'), ('html', 'HTML'), ('markdown', 'Markdown')])
+    content = TextAreaField('Content', validators=[DataRequired()])
+    submit = SubmitField('Post')
 
 
 
 
-import os
-from datetime import *
-#from carpool import db, bcrypt
-#from carpool.models import User, Car, CarManager
-
-print("Welcome to Carpool!")
-username = input("Enter username: ")
-password = input("Enter password: ")
 
 
-class TimeInterval:
+class UpdateCar(FlaskForm):
+    car_name = StringField('Car name', validators=[DataRequired(), Length(min=1, max=50)])
+    model = StringField('Model', validators=[DataRequired(), Length(min=1, max=50)])
+    license_plate = StringField('License plate', validators=[DataRequired(), Length(min=4, max=10)])
+    fuel = IntegerField('Current fuel percentage (must be a number)', validators=[DataRequired(), number_range(0, 100)])
+    seats = IntegerField('Number of seats (must be a number)', validators=[DataRequired()])
+    info = TextAreaField('Additional info')
+    picture = FileField('Add picture', validators=[FileAllowed(['jpg', 'png'])])
+    submit = SubmitField('Update car')
 
-    def __init__(self, start_date, end_date):
-        self.end_date = end_date
-        self.start_date = start_date
+class AddCarForm(FlaskForm):
+    car_name = StringField('Car name', validators=[DataRequired(), Length(min=1, max=50)])
+    model = StringField('Model', validators=[DataRequired(), Length(min=1, max=50)])
+    license_plate = StringField('License plate', validators=[DataRequired(), Length(min=4, max=10)])
+    fuel = IntegerField('Current fuel percentage (must be a number)', validators=[DataRequired(), number_range(0,100)])
+    seats = IntegerField('Number of seats (must be a number)', validators=[DataRequired()])
+    info = TextAreaField('Additional info')
+    picture = FileField('Add picture', validators=[FileAllowed(['jpg', 'png'])])
+    submit = SubmitField('Add car')
 
-    def is_not_in_interval(self, requested_start_date: datetime, requested_end_date: datetime) -> bool:
-        return (requested_start_date < self.start_date and requested_end_date < self.start_date) \
-            or (requested_start_date > self.start_date and requested_end_date > self.end_date)
-
-
-class RentableCar():  # ska inherita från car
-
-    def __init__(self, id, car_name, model, license_plate, fuel, seats):
-        self.booked_dates = []
-        self.id = id
-        self.car_name = car_name
-        self.model = model
-        self.license_plate = license_plate
-        self.fuel = fuel
-        self.seats = seats
-
-
-    def add_booked_interval(self, interval):
-        self.booked_dates.append(interval)
-
-    def is_available(self, requested_interval: TimeInterval) -> bool:
-
-        if len(self.booked_dates) == 0:
-                return True
-
-        for interval in self.booked_dates:
-            if interval.is_not_in_interval(requested_interval.start_date, requested_interval.end_date):
-                return True
-
-        return False
-
-    def __str__(self):
-        return f"Car {self.id} information:\nName: {self.car_name}\nModel: {self.model}\nLicense plate: {self.license_plate}\nFuel level: {self.fuel}\nSeats: {self.seats}"
+    def validate_license_plate(self, license_plate):
+        car = Car.query.filter_by(license_plate=license_plate.data).first()
+        if car:
+            raise ValidationError('Car license plate already registered.')
 
 
-car1 = RentableCar(1, "Lighning McQueen", "Volvo V70", "LMG 204", "7", 5)
-car2 = RentableCar(2, "Pelles bil", "Kia Venga", "ABG 907", "2", 5)
-cars = [car1, car2]
 
-available_cars = []
+class NewBooking(FlaskForm):
 
-action = input("Would you like to book a car or view bookings? [Book/View]: ")
+    car = RadioField('Choose car', validators=[DataRequired()], choices=[])
+    day = DateField('Choose a date you would like to book a car', format='%Y-%m-%d')
+    destination = StringField('Choose your destination', validators=[DataRequired()])
+    submit = SubmitField('Confirm booking')
 
-action.capitalize()
-
-now = datetime.now()
-
-print()
-if action == "book":
-    print(f"Current date and time: {now} ")
-    print("What dates would you like to book?")
-    first_date = input("Enter first date(YYYY-MM-DD): ")
-    second_date = input("Enter last date(YYYY-MM-DD): ")
-
-    try:
-        desired_interval = TimeInterval(datetime.fromisoformat(first_date), datetime.fromisoformat(second_date))
-
-        if datetime.fromisoformat(first_date) <= now or datetime.fromisoformat(second_date) <= now:
-            print("The selected dates are in the past, please choose new ones.")
-
-        # visa available cars, låt användaren välja
-
-        elif car1.is_available(desired_interval):
-
-            print("\nAvailable cars:\n")
-
-            for car in cars:
-                if car.is_available(desired_interval):
-                    available_cars.append(car)
-                    print(f"{car}\n")
-
-            if len(available_cars) == 0:
-                print("No available cars.")
-
-            booked_car = available_cars[int(input("Select the car you wish to book by typing its id: "))]
+    def validate_day(self, day):
+        if  isinstance(day.data, date):
+            if day.data < date.today():
+                raise ValidationError('Date has already passed, please choose another.')
 
 
-            print(f"Successfully booked car {booked_car.id}, {booked_car.car_name}, {first_date} to {second_date}!")
-            car1.add_booked_interval(desired_interval)
-            print(f"\nThank you for using Carpool, {username.capitalize()}!")
-
-        else:
-            print("The dates you have selected are not available, please try again.")
-
-    except:
-        print("Your input is not valid. Try again!")
 
 
-elif action == "view":
-    print("Current bookings: ") #printa bokade datum mha databas
-
-else:
-    print("Please use commands [Book/View].")
 
 
-if RentableCar == True:
-    print("car is avalible")
 
-
-#now = datetime.now()
-#print (f"Current date and time: {now} ")
-#print (now.strftime("%Y-%m-%d %H:%M:%S"))
-
-
+class CommentForm(FlaskForm):
+    content = TextAreaField('Content', validators=[DataRequired()])
+    submit = SubmitField('Send comment')
