@@ -8,14 +8,11 @@ from flaskblog.models import User, Post, Comment, Car, Comment2, CarManager
 from flask_login import login_user, current_user, logout_user, login_required
 from sqlalchemy import or_
 
-
-
-
 @app.route("/")
 @app.route("/home")
 def home():
-    posts = Post.query.order_by(Post.date_posted.desc()).all()
-    return render_template('home.html', posts=posts)
+    bookings = CarManager.query.order_by(CarManager.date_posted.desc()).all()
+    return render_template('home.html', bookings=bookings)
 
 
 @app.route("/about")
@@ -94,7 +91,6 @@ def save_raw_picture_car(form_picture):
     return picture_fn
 
 
-
 @app.route("/bookings", methods=['GET'])
 @login_required
 def bookings():
@@ -103,24 +99,22 @@ def bookings():
     return render_template('bookings.html', bookings=bookings)
 
 
-
 @app.route("/cars", methods=['GET'])
 @login_required
 def cars():
     searchword = request.args.get('key', '')
     if searchword is not '':
         cars = Car.query.filter(or_(Car.car_name.contains(searchword),
-                        Car.fuel.contains(searchword),
-                        Car.seats.contains(searchword))).all()
+                                    Car.fuel.contains(searchword),
+                                    Car.seats.contains(searchword))
+                                ).all()
         if cars:
             return render_template('cars.html', cars=cars, searchword=searchword)
         else:
             flash('No cars related to search found, showing all cars instead', 'danger')
             cars = Car.query.all()
             return render_template('cars.html', cars=cars)
-
     else:
-
         cars = Car.query.all()
         return render_template('cars.html', cars=cars)
     #cars = Car.query.order_by(Car.car_name).all()
@@ -151,20 +145,6 @@ def account():
                            image_file=image_file, form=form)
 
 
-@app.route("/post/new", methods=['GET', 'POST'])
-@login_required
-def new_post():
-    form = PostForm()
-    if form.validate_on_submit():
-        post = Post(title=form.title.data, content_type=form.content_type.data, content=form.content.data, user=current_user)
-        db.session.add(post)
-        db.session.commit()
-        flash('Your post has been created!', 'success')
-        return redirect(url_for('home'))
-    return render_template('create_post.html', title='New Post',
-                           form=form, legend='New Post')
-
-
 @app.route("/cars/add", methods=['GET', 'POST'])
 @login_required
 def add_car():
@@ -183,49 +163,36 @@ def add_car():
                            form=form, legend='Add Car')
 
 
-
-
-
-@app.route("/new_booking", methods=['GET', 'POST'])
+@app.route("/choose_car", methods=['GET'])
 @login_required
-def new_booking():
-    form = NewBooking()
-    if form.validate_on_submit():
-        car = Car.query.filter_by(id=int(form.car.data)).first()
-        booking = CarManager(user=current_user, car=car, day=form.day.data, destination=form.destination.data)
+def choose_car():
+    cars = Car.query.order_by(Car.car_name).all()
+    return render_template('choose_car.html', cars=cars)
 
+
+@app.route("/new_booking/<int:car_id>", methods=['GET', 'POST'])
+@login_required
+def new_booking(car_id):
+    car = Car.query.get_or_404(car_id)
+    form = NewBooking()
+    form.combo.data = f'{car.id}{form.day.data}'
+    form.update.data = False
+    if form.validate_on_submit():
+
+        booking = CarManager(user=current_user,
+                             car=car,
+                             day=form.day.data,
+                             destination=form.destination.data,
+                             combination=form.combo.data)
 
         db.session.add(booking)
         db.session.commit()
         flash('Your car is booked!', 'success')
         return redirect(url_for('home'))
-    optionsList = []
-    for option in Car.query.all():
-        optionsList.append((f'{option.id}',
-                            f'{option.car_name.upper()} - {option.model}, {option.license_plate}, Seats: {option.seats}, Fuel %: {option.fuel}'))
-
-        form.car.choices.append((f'{option.id}',
-                            f'{option.car_name.upper()} - {option.model}, {option.license_plate}, Seats: {option.seats}, Fuel %: {option.fuel}'))
 
     form.destination.data = current_user.std_destination
     return render_template('new_booking.html', title='Book Car',
-                           form=form, legend='Book Car')
-
-
-@app.route("/post/<int:post_id>", methods=['GET', 'POST'])
-def post(post_id):
-    post = Post.query.get_or_404(post_id)
-    form = CommentForm()
-    if form.validate_on_submit():
-        if current_user.is_authenticated: # you can only comment if you're logged in
-            comment = Comment(content=form.content.data, user=current_user, post=post)
-            db.session.add(comment)
-            db.session.commit()
-            flash('Your post has been created!', 'success')
-            return redirect(f'/post/{post.id}')
-        else:
-            flash('You are not logged in. You need to be logged in to be able to comment!', 'danger')
-    return render_template('post.html', title=post.title, post=post, form=form)
+                           form=form, legend='Book Car', car=car)
 
 
 @app.route("/car/<int:car_id>", methods=['GET', 'POST'])
@@ -244,26 +211,6 @@ def car(car_id):
     return render_template('car.html', title=car.car_name, car=car, form=form)
 
 
-@app.route("/post/<int:post_id>/update", methods=['GET', 'POST'])
-@login_required
-def update_post(post_id):
-    post = Post.query.get_or_404(post_id)
-    if post.author != current_user:
-        abort(403)
-    form = PostForm()
-    if form.validate_on_submit():
-        post.title = form.title.data
-        post.content = form.content.data
-        post.content_type = form.content_type.data
-        db.session.commit()
-        flash('Your post has been updated!', 'success')
-        return redirect(url_for('post', post_id=post.id))
-    elif request.method == 'GET':
-        form.title.data = post.title
-        form.content.data = post.content
-        form.content_type.data = post.content_type
-    return render_template('create_post.html', title='Update Post',
-                           form=form, legend='Update Post')
 
 @app.route("/car/<int:car_id>/update", methods=['GET', 'POST'])
 @login_required
@@ -299,18 +246,41 @@ def update_car(car_id):
                            form=form, legend='Update Post')
 
 
-
-@app.route("/post/<int:post_id>/delete", methods=['POST'])
+@app.route("/bookings/<int:booking_id>", methods=['GET'])
 @login_required
-def delete_post(post_id):
-    post = Post.query.get_or_404(post_id)
-    if post.author != current_user:
-        abort(403)
-    db.session.delete(post)
-    db.session.commit()
-    flash('Your post has been deleted!', 'success')
-    return redirect(url_for('home'))
+def booking(booking_id):
+    booking = CarManager.query.filter_by(id=booking_id).first()
+    return render_template('booking.html', title=booking.car.car_name, booking=booking)
 
+
+@app.route("/booking/<int:booking_id>/update", methods=['GET', 'POST'])
+@login_required
+def update_booking(booking_id):
+    carmanager = CarManager.query.get_or_404(booking_id)
+    form = NewBooking()
+    if carmanager.user != current_user:
+        abort(403)
+
+    if form.day.data == carmanager.day:
+        form.update.data = True
+    else:
+        form.update.data = False
+    form.update.date = False
+    form.combo.data = f'{carmanager.car_id}{form.day.data}'
+    car = carmanager.car
+
+    if form.validate_on_submit():
+        carmanager.destination = form.destination.data
+        carmanager.day = form.day.data
+        carmanager.combination = form.combo.data
+        db.session.commit()
+        flash('Your booking has been updated', 'success')
+        return redirect(url_for('booking', booking_id=carmanager.id))
+    elif request.method == 'GET':
+        form.destination.data = carmanager.destination
+        form.day.data = carmanager.day
+    return render_template('new_booking.html', title='Update Booking',
+                           form=form, car=car, legend='Update Booking')
 
 
 @app.route("/car/<int:car_id>/delete", methods=['POST'])
@@ -319,20 +289,20 @@ def delete_car(car_id):
     car = Car.query.get_or_404(car_id)
     if car.user != current_user:
         abort(403)
+    CarManager.query.filter_by(car=car).delete()
     db.session.delete(car)
     db.session.commit()
     flash('Your car has been removed!', 'success')
     return redirect(url_for('home'))
 
 
-@app.route("/car/<int:car_manager_id>/delete", methods=['POST'])
+@app.route("/booking/<int:booking_id>/delete", methods=['POST'])
 @login_required
-def delete_booking(car_manager_id):
-    car = Car.query.get_or_404(car_manager_id)
-    if car.user != current_user:
+def delete_booking(booking_id):
+    booking = CarManager.query.get_or_404(booking_id)
+    if booking.user != current_user:
         abort(403)
-    db.session.delete(car)
+    db.session.delete(booking)
     db.session.commit()
     flash('Your booking has been cancelled', 'success')
     return redirect(url_for('home'))
-

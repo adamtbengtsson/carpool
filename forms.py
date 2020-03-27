@@ -1,11 +1,12 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
 from flask_login import current_user
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField, RadioField, IntegerField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField, IntegerField
 from wtforms.fields.html5 import DateField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError, number_range
-from flaskblog.models import User, Car
+from flaskblog.models import User, Car, CarManager
 from datetime import date
+
 
 
 class RegistrationForm(FlaskForm):
@@ -29,12 +30,14 @@ class RegistrationForm(FlaskForm):
             raise ValidationError('That email is taken. Please choose a different one.')
 
 
+
 class LoginForm(FlaskForm):
     email = StringField('Email',
                         validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired()])
     remember = BooleanField('Remember Me')
     submit = SubmitField('Login')
+
 
 
 class UpdateAccountForm(FlaskForm):
@@ -60,16 +63,6 @@ class UpdateAccountForm(FlaskForm):
                 raise ValidationError('That email is taken. Please choose a different one.')
 
 
-class PostForm(FlaskForm):
-    title = StringField('Title', validators=[DataRequired()])
-    content_type = RadioField('Content type', validators=[DataRequired()], choices=[('plain', 'Plain Text'), ('html', 'HTML'), ('markdown', 'Markdown')])
-    content = TextAreaField('Content', validators=[DataRequired()])
-    submit = SubmitField('Post')
-
-
-
-
-
 
 class UpdateCar(FlaskForm):
     car_name = StringField('Car name', validators=[DataRequired(), Length(min=1, max=50)])
@@ -80,6 +73,8 @@ class UpdateCar(FlaskForm):
     info = TextAreaField('Additional info')
     picture = FileField('Add picture', validators=[FileAllowed(['jpg', 'png'])])
     submit = SubmitField('Update car')
+
+
 
 class AddCarForm(FlaskForm):
     car_name = StringField('Car name', validators=[DataRequired(), Length(min=1, max=50)])
@@ -99,20 +94,21 @@ class AddCarForm(FlaskForm):
 
 
 class NewBooking(FlaskForm):
-
-    car = RadioField('Choose car', validators=[DataRequired()], choices=[])
     day = DateField('Choose a date you would like to book a car', format='%Y-%m-%d')
     destination = StringField('Choose your destination', validators=[DataRequired()])
     submit = SubmitField('Confirm booking')
+    combo = StringField('combo')
+    update =BooleanField('update')
 
     def validate_day(self, day):
-        if  isinstance(day.data, date):
+        update = self.update.data
+        combo = self.combo.data
+        if isinstance(day.data, date):
             if day.data < date.today():
                 raise ValidationError('Date has already passed, please choose another.')
 
-
-
-
+        if CarManager.query.filter_by(combination=f'{combo}').first() and not update:
+            raise ValidationError('Car is already booked this date, please choose another date.')
 
 
 
